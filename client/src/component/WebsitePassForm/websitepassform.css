@@ -203,3 +203,15 @@ label {
 p,b {
     color: white;
 }
+
+.copy_button {
+    width: 300px;
+    height: 40px;
+    border: none;
+    border-radius: 7px;
+    margin: 10px;
+    padding-left: 15px;
+    font-size: 17px;
+    background-color: #0DB8DE;
+    cursor: pointer;
+}

@@ -19,26 +19,45 @@ function PassForm() {
     })
   },[]);
 
- const addPassword = () => {
-   if(title==="" || password===""){
-     alert("Any Field can't be empty");
-   }
-   else{
-  const hashedpassword = encrypt(password);
-  manager_ref.add({
-    password:hashedpassword.password,
-    user:firebase.auth().currentUser.email,
-    website:title,
-    iv:hashedpassword.iv,
-  });
-  alert("password added successfully");
-  }
-  // Axios.post('http://localhost:3001/addpassword', {password: password, title: title, email:firebase.auth().currentUser.email});
+const [status,setStatus]=useState(0);
+ 
+
+
+const addPassword = () => {
   
+  
+      
+    const hashedpassword = encrypt(password);
+    manager_ref.add({
+      password:hashedpassword.password,
+      user:firebase.auth().currentUser.email,
+      website:title,
+      iv:hashedpassword.iv,
+    });
+    alert("password added successfully " + hashedpassword);
+  // Axios.post('http://localhost:3001/addpassword', {password: password, title: title, email:firebase.auth().currentUser.email});
  };
 
  
-
+ function fun(){
+  if(title=="" || password==""){
+    alert("any field cant be empty");
+    return;
+  }
+  const manager=firebase.firestore().collection('manager');
+    var passwordr = manager.where("user","==",firebase.auth().currentUser.email).where("website","==",title);
+    
+    passwordr.get().then((querySnapshot) =>{
+      querySnapshot.forEach((doc) => {
+      setStatus(100);
+      alert("Duplicate Entry is not allowed before if condition");
+      console.log(status);
+      return;
+      });
+    });
+    addPassword();
+  
+  }
 
  
  function onlogout(){
@@ -53,8 +72,9 @@ function PassForm() {
 
 
 function showMyPass(){
+  
   try{
- 
+    
       const manager_ref=firebase.firestore().collection('manager');
        console.log(firebase.auth().currentUser.email);
        const passwordref = manager_ref.where("user","==",firebase.auth().currentUser.email);
@@ -78,6 +98,7 @@ function showMyPass(){
            })
        })
        
+       document.getElementById("password_button").remove();
    }
    catch (e){
        console.log(e);
@@ -130,7 +151,7 @@ function update(searchTitles,updates){
   try{
     const manager=firebase.firestore().collection('manager');
     // manager.
-    const passwordr = manager.where("user","==",firebase.auth().currentUser.email).where("website","==",title);
+    var passwordr = manager.where("user","==",firebase.auth().currentUser.email).where("website","==",title);
     var count=0;
     passwordr.get().then((querySnapshot) =>{
         querySnapshot.forEach((doc) => {
@@ -138,7 +159,6 @@ function update(searchTitles,updates){
         doc.ref.delete();
         });
       });
-
        if(count==0){
          alert("entry not found");
        }
@@ -176,6 +196,23 @@ function del(){
   }
 }
 
+
+
+
+
+function copy_password(id){
+  var text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text);
+  alert("Succesfully copied to clipboard");
+}
+
+
+
+
+
+
+
+
 return <div className="Appy">
     <div className="login-box AddingPassword">
     {/* kuch pta lga kya dkkt h? */}
@@ -186,7 +223,7 @@ return <div className="Appy">
       <br></br>
 
 
-      {/* <form>   */}
+
 
 
         <div className="form-group">
@@ -205,7 +242,7 @@ return <div className="Appy">
       <br></br>
       
   
-      <button onClick={addPassword}>Add Password </button>
+      <button onClick={fun}>Add Password </button>
       
       <button onClick={del}>Delete Entry </button>
       
@@ -226,9 +263,9 @@ return <div className="Appy">
       Your Password is : {passworrd}
                 </div>
 
-      <button onClick={showMyPass}>Show all passwords</button>
+      <button onClick={showMyPass} id="password_button">Show all passwords</button>
 
-      {/* </form> */}
+
             </div>
             <br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br>
 
@@ -238,6 +275,7 @@ return <div className="Appy">
 
       <th scope="col">Website</th>
       <th scope="col">Password</th>
+      <th scope="col">Copy this password</th>
     </tr>
   </thead>
   <tbody>
@@ -245,7 +283,8 @@ return <div className="Appy">
 
                       return <tr>
                         <th scope="row" key="{i}"><p>{val.website}</p></th>
-                        <td><p>{val.password}</p></td>
+                        <td id={i}><p>{val.password}</p></td>
+                        <td><button className="copy_button" onClick={() => {copy_password(i)}}>Copy</button></td>
                           </tr>
                   
                 })} 
